@@ -1,0 +1,13 @@
+.sgit
+.cache
+.DS_Store 
+*.class
+*.log
+dist/*
+target/
+.idea
+project/boot/
+project/plugins/project/
+.history
+.cache
+.lib
