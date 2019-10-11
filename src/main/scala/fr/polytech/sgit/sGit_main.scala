@@ -39,25 +39,12 @@ object sGit_main extends App {
                 case "commit" => //TODO
                 case "log" => //TODO
                 case "branch" => //TODO
-                case _ => {
-                  val ds = new io.File(".sgit/STAGE")
-                  val lines = fromFile(file = ds).getLines
-                  val res = lines.toList.head
-                  if (res.contains("first")){
-                    println(res)
-                    println("CAMARCHE")
-                    println("RRRRRRRRRRREEEEEE")
-                  }
-
-                  println(res)
-
-                  println("     Command needed...")
+                case _ => println("     Command needed...")
 
                 }
               }
-            }
-            case _ =>
-              println("Failed: You are not in a sgit repository")
+            }}
+            case _ => println("Failed: You are not in a sgit repository")
           }
 
         }
