@@ -19,7 +19,6 @@ object sGit_main extends App {
 
     case Some(config) => {
       val srepository = Repository(currentDir)
-      println(" je suis dans le Oparser")
       println(config.command)
       config.command match {
         case "init" => println(srepository.initRepository())

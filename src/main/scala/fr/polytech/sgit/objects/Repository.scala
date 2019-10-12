@@ -76,8 +76,6 @@ case class Repository(val path: String) {
       else  fails = f :: fails
     })
     val tostring= fails.mkString(", ")
-    val ise= fails.isEmpty
-
      if (fails.isEmpty){
        addFilesToStage(validNames)
        "Success files have been added"
@@ -104,16 +102,10 @@ case class Repository(val path: String) {
   def UpdateIfNeeded(file: File): Unit = {
 
     val sha = createHash(file.contentAsString)
-    print(sha)
     val filepath = file.canonicalPath
-    print(filepath)
     val wdfile= wdFile(sha,filepath)
     val res= getState(wdfile)
-    println(res)
-    println("dbgbgfbfhd")
-    val filr= stage.lines.toList.filterNot(l => l.contains(filepath))
 
-    println(filr)
     if (!(res == "Staged")){
       if (res == "Modified"){
         val newcontent= stage.lines.toList.filterNot(l => l.contains(filepath))
@@ -157,6 +149,7 @@ case class Repository(val path: String) {
     }
   }
 
+  //Finished
   def createHash(content: String): String = {
     val md = java.security.MessageDigest.getInstance("SHA-1")
     md.digest(content.getBytes("UTF-8")).map("%02x".format(_)).mkString
