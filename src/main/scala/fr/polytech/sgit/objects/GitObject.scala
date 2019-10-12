@@ -1,6 +1,6 @@
 package fr.polytech.sgit.objects
 
-trait GitObject{
+trait GitObject {
   val hash : String = ""
   val content : String // should be Byte
   def getHash(): String

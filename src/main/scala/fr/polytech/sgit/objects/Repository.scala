@@ -1,24 +1,21 @@
 package fr.polytech.sgit.objects
-import java.io
-import java.io.{File=>f}
 
+import better.files.File
 
-import better.files._
-
-case class Repository(val path: String){
+case class Repository(val path: String) {
 
 /* Initialize the sgit repository if it's not already done
  */
   val sep= f.separator
   val stage = File(s"$path$sep.sgit${sep}index")
 
-  def initRepository(): Unit = {
-    println("Je suis dans le init")
+  def initRepository(): String = {
     if (!isSgitRepository(true, path)) {
       createRepository()
+      "Initialised empty sGit repository in " + path + sep +".sgit"
     }
     else {
-      println(s"Failed, unable to create repository : $path${sep}sgit already exists")
+     "Unable to create a repository here:" +path+sep+"sgit already existing"
     }
   }
 
@@ -67,32 +64,28 @@ case class Repository(val path: String){
   }
 
 
-  def add(files: Array[String]):Unit ={
+  def add(files: Seq[String]):String ={
     val fails = Nil
     val validNames = Nil
 
     files.map( f => {
-      val fileToBeStaged = File(f)
-      if (fileToBeStaged.exists) fileToBeStaged :: validNames
-      else fileToBeStaged :: fails
+      if (File(f).exists) f :: validNames
+      else f :: fails
     })
-
-    if (validNames.nonEmpty){
-      addFilesToStage(validNames)
-    }
     val tostring= fails.mkString(",")
-    if(!(tostring==null)){
-      println(s" The following files $tostring did not match any files")
-    }
+
+     if (toString==""){
+       addFilesToStage(validNames)
+       "Success files have been added"
+     }
+    else " The following files:" + tostring + " could not be added cause they did not match any files"
 
   }
 
 
   def addFilesToStage(filesToBeStaged: List[File]): Unit = {
 
-    //Retrieve index content
-
-    val indexContent = stage.lines
+    val indexContent = stage.lines.toList
 
     //val file = filesToBeStaged.head
 
@@ -105,8 +98,54 @@ case class Repository(val path: String){
       })
     }
     else{
-      AreInIndex(filesToBeStaged,stage.lines.toList)
+      CheckIn_Index(filesToBeStaged)
     }
+  }
+
+  def CheckIn_Index(files: List[File]): Unit = {
+
+    val indexContent = stage.lines.toList
+    val fileIt = files.head
+    // File information
+    val sha = createHash(fileIt.contentAsString)
+
+
+    val state= getState(indexContent,fileIt,sha)
+
+    if (state=="Untracked") stage.appendLine(s"$sha\t${fileIt.canonicalPath}")
+    else if (state=="Modified")
+    if(!(files.tail == Nil)){
+      CheckIn_Index(files.tail)
+    }
+  }
+
+  //Pas la peine de faire un foreach ou un map car tu vas parcourir tout le fichier pour rien :
+  // peut etre tu t'arretes à la première ligne du fichier
+  /* Check if the file is already staged, if it's not : add it to stage else nothing */
+
+  def isStaged(lines: List[String], file: File): Boolean = getState(lines,file)=="staged"
+  def isModified(lines: List[String], file: File):Boolean = getState(lines,file)=="modified"
+  def isUntracked(lines: List[String], file: File):Boolean = getState(lines,file)=="modified"
+
+  def getState(lines: List[String], file: File,sha: String): String= {
+
+
+    val containsSha = lines.head.contains(file)
+    val containsName = lines.head.contains(sha)
+
+    //I have checked every index's lines
+    val end = (lines.tail == Nil)
+
+    (containsName,containsSha) match{
+      case(true,true) => "staged"
+      case(false,false) => if (end) {
+        stage.appendLine(s"$sha\t${file.canonicalPath}")
+        "untracked"
+      } else getState(lines.tail, file,sha)
+      case _ => "modified"
+
+    }
+
   }
 
   def createHash(content: String): String = {
@@ -114,35 +153,4 @@ case class Repository(val path: String){
     md.digest(content.getBytes("UTF-8")).map("%02x".format(_)).mkString
   }
 
-  def AreInIndex(files: List[File],indexContent: List[String]): Unit = {
-
-    val fileIt = files.head
-    isStaged(indexContent,fileIt)
-    if(!(files.tail == Nil)){
-      AreInIndex(files.tail, indexContent)
-    }
-  }
-
-  //Pas la peine de faire un foreach ou un map car tu vas parcourir tout le fichier pour rien :
-  // peut etre tu t'arretes à la première ligne du fichier
-  /* Check if the file is already staged, if it's not : add it to stage else nothing */
-  def isStaged(lines: List[String], file: File): Boolean = checkFileInIndex(lines,file)
-
-  def checkFileInIndex(lines: List[String], file: File): Boolean = {
-
-    val sha = createHash(file.contentAsString)
-    val line = lines.head
-    val contains = line.contains(sha)
-    val end = (lines.tail == Nil)
-    (contains, end) match {
-      case (false, false) => checkFileInIndex(lines.tail, file)
-      case (false, true) => {
-        stage.appendLine(s"$sha\t${file.canonicalPath}")
-        false
-      }
-      case _ => true
-    }
-  }
-
 }
-

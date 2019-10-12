@@ -1,14 +1,8 @@
 package fr.polytech.sgit
-import java.io
-import java.io.File
 
-import better.files.File
-import sgitParser._
-import scopt.OParser
-
-import scala.io.Source._
 import fr.polytech.sgit.objects.Repository
-
+import fr.polytech.sgit.sgitParser.{Parser, ParserConfig}
+import scopt.OParser
 
 object sGit_main extends App {
 
@@ -28,12 +22,12 @@ object sGit_main extends App {
       println(" je suis dans le Oparser")
       println(config.command)
       config.command match {
-        case "init" => srepository.initRepository()
+        case "init" => println(srepository.initRepository())
         case _ => {
           srepository.isSgitRepository(false,srepository.path) match {
             case true => {
               config.command match {
-                case "add" => //TODO
+                case "add" => println(srepository.add(config.files))
                 case "status" => //TODO
                 case "diff" => //TODO
                 case "commit" => //TODO
@@ -42,20 +36,15 @@ object sGit_main extends App {
                 case _ => println("     Command needed...")
 
                 }
-              }
-            }}
-            case _ => println("Failed: You are not in a sgit repository")
-          }
 
+              }
+            case _ => println("Failed: You are not in a sgit repository")
+            }
         }
       }
-      } case None => println("Invalid command, Usage: sgit <command> [Option] <args>")
     }
+    case None => println("Invalid command, Usage: sgit <command> [Option] <args>")
+      }
+
+
 }
-
-
-
-
-
-
-
