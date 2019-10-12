@@ -1,13 +1,17 @@
 package fr.polytech.sgit.objects
 
-import better.files.File
+import better.files._
+import java.io.{File => f, FileWriter}
+import wdFile._
 
 case class Repository(val path: String) {
+
+  /*---------------init command functions----------------*/
 
 /* Initialize the sgit repository if it's not already done
  */
   val sep= f.separator
-  val stage = File(s"$path$sep.sgit${sep}index")
+  val stage = File(s"$path${sep}.sgit${sep}index")
 
   def initRepository(): String = {
     if (!isSgitRepository(true, path)) {
@@ -15,7 +19,7 @@ case class Repository(val path: String) {
       "Initialised empty sGit repository in " + path + sep +".sgit"
     }
     else {
-     "Unable to create a repository here:" +path+sep+"sgit already existing"
+     "Unable to create a repository here:" + path + sep +"sgit already existing"
     }
   }
 
@@ -23,20 +27,17 @@ case class Repository(val path: String) {
   /* Create the whole sgit folder tree structure */
   def createRepository() : Unit = {
 
-    createFileOrDir(".sgit/Objects/Commits", true, true)
-    createFileOrDir(".sgit/Objects/Trees", true, false)
-    createFileOrDir(".sgit/Objects/Blobs", true, false)
+    createFileOrDir(".sgit/objects/Commits", true, true)
+    createFileOrDir(".sgit/objects/Trees", true, false)
+    createFileOrDir(".sgit/objects/Blobs", true, false)
 
     createFileOrDir(".sgit/refs/tags", true, true)
     createFileOrDir(".sgit/refs/headers", true, false)
     ".sgit/HEAD".toFile.createIfNotExists(false,false).appendLine("ref: refs/heads/master\n")
-
-
   }
 
   /* Create File or Directory w/o parents */
   def createFileOrDir(name: String, isdir: Boolean ,parents: Boolean): Unit = name.toFile.createIfNotExists(isdir, parents)
-
 
   /* Check if we are in a sgit repository. Look for the .sgit in current directory, if we haven't returned,
   recurse in parent
@@ -58,94 +59,102 @@ case class Repository(val path: String) {
         isSgitRepository(false,parentDirectory)
         }
         else found
-
       }
     }
   }
 
+  /*-----------add command functions----------------*/
 
+  //Finished
   def add(files: Seq[String]):String ={
-    val fails = Nil
-    val validNames = Nil
+    var fails = List() : List[String]
+    var validNames = List() : List[File]
 
-    files.map( f => {
-      if (File(f).exists) f :: validNames
-      else f :: fails
+    files.toList.map( f => {
+      val filef= File(f)
+      if (filef.exists) validNames = filef :: validNames
+      else  fails = f :: fails
     })
-    val tostring= fails.mkString(",")
+    val tostring= fails.mkString(", ")
+    val ise= fails.isEmpty
 
-     if (toString==""){
+     if (fails.isEmpty){
        addFilesToStage(validNames)
        "Success files have been added"
      }
-    else " The following files:" + tostring + " could not be added cause they did not match any files"
+    else " The following files: " + tostring + " could not be added cause they did not match any files"
 
   }
 
-
+  //Finished
   def addFilesToStage(filesToBeStaged: List[File]): Unit = {
-
-    val indexContent = stage.lines.toList
-
-    //val file = filesToBeStaged.head
 
     if (!stage.exists) {
       stage.createFile()
-      filesToBeStaged.foreach(f => {
+      filesToBeStaged.map(f => {
         val fileContent = f.contentAsString
         val sha = createHash(fileContent)
         stage.appendLine(s"$sha\t${f.canonicalPath}")
       })
     }
-    else{
-      CheckIn_Index(filesToBeStaged)
-    }
+    else filesToBeStaged.map(f=> UpdateIfNeeded(f))
   }
 
-  def CheckIn_Index(files: List[File]): Unit = {
+  //Finished
+  def UpdateIfNeeded(file: File): Unit = {
 
-    val indexContent = stage.lines.toList
-    val fileIt = files.head
-    // File information
-    val sha = createHash(fileIt.contentAsString)
+    val sha = createHash(file.contentAsString)
+    print(sha)
+    val filepath = file.canonicalPath
+    print(filepath)
+    val wdfile= wdFile(sha,filepath)
+    val res= getState(wdfile)
+    println(res)
+    println("dbgbgfbfhd")
+    val filr= stage.lines.toList.filterNot(l => l.contains(filepath))
 
-
-    val state= getState(indexContent,fileIt,sha)
-
-    if (state=="Untracked") stage.appendLine(s"$sha\t${fileIt.canonicalPath}")
-    else if (state=="Modified")
-    if(!(files.tail == Nil)){
-      CheckIn_Index(files.tail)
+    println(filr)
+    if (!(res == "Staged")){
+      if (res == "Modified"){
+        val newcontent= stage.lines.toList.filterNot(l => l.contains(filepath))
+        val filewriter= new FileWriter(stage.canonicalPath)
+        filewriter.write(newcontent.mkString("\n")+"\n")
+        filewriter.close()
+      }
+      stage.appendLine(s"$sha\t$filepath")
     }
   }
 
   //Pas la peine de faire un foreach ou un map car tu vas parcourir tout le fichier pour rien :
-  // peut etre tu t'arretes à la première ligne du fichier
+  // peut etre tu t'arretes à la première ligne du fichier donc Tail reccursion
   /* Check if the file is already staged, if it's not : add it to stage else nothing */
 
-  def isStaged(lines: List[String], file: File): Boolean = getState(lines,file)=="staged"
-  def isModified(lines: List[String], file: File):Boolean = getState(lines,file)=="modified"
-  def isUntracked(lines: List[String], file: File):Boolean = getState(lines,file)=="modified"
+  // Finished (Ajouté Au cas ou, meme si pas besoin pour l'instant)
+  def isStaged(file: wdFile): Boolean = getState(file) == "Staged"
+  def isModified(file: wdFile):Boolean = getState(file)== "Modified"
+  def isUntracked(file: wdFile):Boolean = getState(file)== "Untracked"
 
-  def getState(lines: List[String], file: File,sha: String): String= {
+  // Finished
+  def getState(wdfile: wdFile): String= { val indexlines = stage.lines.toList
+    checklines(indexlines,wdfile)}
 
+  // Finished
+  def checklines(lines:List[String], file:wdFile):String ={
 
-    val containsSha = lines.head.contains(file)
-    val containsName = lines.head.contains(sha)
-
+    val containsSha = lines.head.contains(file.sha)
+    val containsName = lines.head.contains(file.path)
+    print("sha: ")
+    println(containsSha)
+    print("name: ")
+    println(containsName)
     //I have checked every index's lines
     val end = (lines.tail == Nil)
 
     (containsName,containsSha) match{
-      case(true,true) => "staged"
-      case(false,false) => if (end) {
-        stage.appendLine(s"$sha\t${file.canonicalPath}")
-        "untracked"
-      } else getState(lines.tail, file,sha)
-      case _ => "modified"
-
+      case(true,true) => "Staged"
+      case(false,_) => if (end) "Untracked" else checklines(lines.tail,file)
+      case _ => "Modified"
     }
-
   }
 
   def createHash(content: String): String = {

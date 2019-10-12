@@ -1,31 +1,50 @@
 package fr.polytech.sgit.tests
 
-
-import org.scalatest._
-import better.files._
-import java.nio.file.{Files, Paths}
-
 import fr.polytech.sgit.objects.Repository
+import org.scalatest._
+import better.files.{File=> BTFile}
+import java.io.File
 
-class initTest extends FunSpec {
 
+class init_Test extends FlatSpec with BeforeAndAfterEach {
 
-  describe("With no sgit init command used beforehand") {
-    it("Should create a .sgit directory with the right structure") {
-      if(Files.exists(Paths.get(".sgit"))) Tools.delete(".sgit")
-      Init.sgit_init()
-      assert(Files.exists(Paths.get(".sgit/index")))
-      assert(Files.exists(Paths.get(".sgit/objects")))
-      assert(Files.exists(Paths.get(".sgit/refs/tags")))
-      assert(Files.exists(Paths.get(".sgit/refs/heads")))
-      assert(Files.readString(Paths.get(".sgit/HEAD")) == "ref: refs/heads/master")
+  val / = File.separator
+  val testRepository = Repository(System.getProperty("user.dir"))
+
+    //Mock sgit init before each test
+    override def beforeEach(): Unit = {
+      testRepository.initRepository()
     }
-  }
 
-  describe("With sgit init command already used") {
-    it("Shouldn't do anything") {
-      assert(Init.sgit_init() == "Initialised empty sGit repository in " + Paths.get(".").toAbsolutePath + ".sgit")
-      assert(Init.sgit_init() == "Reinitialised existing sGit repository in " + Paths.get(".").toAbsolutePath + ".sgit")
+    //Clean the working repository after each test
+    override def afterEach(): Unit = {
+      val sgit_directory= System.getProperty("user.dir")+ / + ".sgit"
+      BTFile(sgit_directory).delete()
     }
+
+
+    "The sGit <init> command" should "create the .sgit repository with the right structure" in {
+      assert(BTFile(".sgit").exists())
+      assert(BTFile(".sgit" + / + "objects/Blobs").exists())
+      assert(BTFile(".sgit" + / + "objects/Commits").exists())
+      assert(BTFile(".sgit" + / + "objects/Trees").exists())
+      assert(BTFile(".sgit" + / + "ref/tags").exists())
+      assert(BTFile(".sgit" + / + "ref/headers").exists())
+      assert(BTFile(".sgit" + / + "HEAD").exists())
+
+    }
+
+    it should "insert \"master\" as initial branch in HEAD's content" in {
+      val content = BTFile(".sgit" + / + "HEAD").lines.mkString("")
+      assert(content == "ref: refs/heads/master")
+    }
+
+    it should "not be possible to initialize a sgit repository if it has been already done" in {
+      val path = System.getProperty("user.dir")
+      val repo = Repository(path)
+      assert(repo.initRepository() == ("Unable to create a repository here:" + path + / + "sgit already existing"))
+    }
+
+
+
   }
-}
