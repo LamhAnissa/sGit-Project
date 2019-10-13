@@ -1,5 +1,6 @@
 package fr.polytech.sgit
 
+import better.files.File
 import fr.polytech.sgit.objects.Repository
 import fr.polytech.sgit.sgitParser.{Parser, ParserConfig}
 import scopt.OParser
@@ -33,7 +34,6 @@ object sGit_main extends App {
                 case "log" => //TODO
                 case "branch" => //TODO
                 case _ => println("     Command needed...")
-
                 }
 
               }

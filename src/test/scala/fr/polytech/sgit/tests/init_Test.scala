@@ -18,7 +18,7 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
 
     //Clean the working repository after each test
     override def afterEach(): Unit = {
-      val sgit_directory= System.getProperty("user.dir")+ / + ".sgit"
+      val sgit_directory= testRepository.path + / + ".sgit"
       BTFile(sgit_directory).delete()
     }
 
@@ -28,8 +28,8 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
       assert(BTFile(".sgit" + / + "objects/Blobs").exists())
       assert(BTFile(".sgit" + / + "objects/Commits").exists())
       assert(BTFile(".sgit" + / + "objects/Trees").exists())
-      assert(BTFile(".sgit" + / + "ref/tags").exists())
-      assert(BTFile(".sgit" + / + "ref/headers").exists())
+      assert(BTFile(".sgit" + / + "refs/tags").exists())
+      assert(BTFile(".sgit" + / + "refs/headers").exists())
       assert(BTFile(".sgit" + / + "HEAD").exists())
 
     }
@@ -40,9 +40,9 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
     }
 
     it should "not be possible to initialize a sgit repository if it has been already done" in {
-      val path = System.getProperty("user.dir")
-      val repo = Repository(path)
-      assert(repo.initRepository() == ("Unable to create a repository here:" + path + / + "sgit already existing"))
+      val pathBis = System.getProperty("user.dir")
+      val repo = Repository(pathBis)
+      assert(repo.initRepository() == ("Unable to create a repository here:" + pathBis + / + "sgit already existing"))
     }
 
 

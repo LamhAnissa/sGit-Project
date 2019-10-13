@@ -26,11 +26,9 @@ case class Repository(val path: String) {
 
   /* Create the whole sgit folder tree structure */
   def createRepository() : Unit = {
-
     createFileOrDir(".sgit/objects/Commits", true, true)
     createFileOrDir(".sgit/objects/Trees", true, false)
     createFileOrDir(".sgit/objects/Blobs", true, false)
-
     createFileOrDir(".sgit/refs/tags", true, true)
     createFileOrDir(".sgit/refs/headers", true, false)
     ".sgit/HEAD".toFile.createIfNotExists(false,false).appendLine("ref: refs/heads/master\n")
@@ -156,3 +154,5 @@ case class Repository(val path: String) {
   }
 
 }
+
+/*-----------status command functions----------------*/
