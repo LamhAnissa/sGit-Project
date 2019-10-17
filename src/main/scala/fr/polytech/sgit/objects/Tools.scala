@@ -28,10 +28,6 @@ object Tools {
 
     val containsSha = lines.head.contains(file.sha)
     val containsName = lines.head.contains(file.path)
-    print("sha: ")
-    println(containsSha)
-    print("name: ")
-    println(containsName)
     //I have checked every index's lines
     val end = (lines.tail == Nil)
 
@@ -129,8 +125,8 @@ object Tools {
   }
 
   def getTreeContent(treeSha:String, mapContent: Map[String,List[String]], path: String):Map[String,List[String]] = {
-    println(File(path + / + ".sgit" + / + "objects"+ / + "Trees" + / + treeSha).exists)
-    val mainTree_content = File(path + / + ".sgit" + / + "objects"+ / + "Trees" + / + treeSha).lines.toList
+    println(File( ".sgit/objects/Trees/"+treeSha).toString())
+    val mainTree_content = File(".sgit" + / + "objects"+ / + "Trees" + / + treeSha).lines.toList
     val listBlobs = mainTree_content.filter(line => line.contains("blob"))
     println("listB"+ listBlobs)
     val mapTemp = mapContent + (treeSha -> listBlobs)
@@ -150,8 +146,9 @@ object Tools {
 
     val lastCommit = getLastCommit(path,getCurrentHead(path))
     println("llll     :: "+lastCommit.mkString(""))
-    val commitTree = File(path+ / + ".sgit" + / + "objects" + / + "Commits" + / + lastCommit).contentAsString
-    println("ggggg"+commitTree)
+    val commitContent = File(path+ / + ".sgit" + / + "objects" + / + "Commits" + / + lastCommit).contentAsString
+    val commitTree= commitContent.split("\n").head
+    println("commit tree "+commitTree)
     val mapCommitTree = getTreeContent(commitTree,Map.empty,path)
     val blobs = mapCommitTree.values.flatten
     val blobs_map = blobs.map(blobLine => {

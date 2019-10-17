@@ -34,7 +34,7 @@ case class Repository(val path: String) {
   def checkFiles(files: Seq[String], validNames: List[String], fails: List[String]): List[List[String]] = {
 
     if (files == Nil) List(validNames, fails)
-    val file = files.head
+    else {val file = files.head
     if (File(file).exists) {
       val listOk = file :: validNames
       checkFiles(files.tail, listOk, fails)
@@ -43,7 +43,7 @@ case class Repository(val path: String) {
       val listNotOk = file :: fails
       checkFiles(files.tail, validNames, listNotOk)
     }
-  }
+  }}
 
   //Finished
   def addFilesToStage(filesToBeStaged: List[String]): Unit = {
@@ -291,24 +291,34 @@ case class Repository(val path: String) {
     // firstSubList= newfile not committed, SecondSubList= file commited but modified, ThirdSubList= deleted but still present in last commit
     val uncommittedChanges = getUncommittedChanges(index,path)
     if(uncommittedChanges.nonEmpty){
-      println("Changes to be committed:\n\n" + (uncommittedChanges.head.map("new file:   " + _) mkString "\n") + "\n" + uncommittedChanges.last.map("modified:   " + _) mkString "\n" + "\n" + (uncommittedChanges.tail.head.map("deleted:   " + _) mkString "\n"))
+      println("Changes to be committed:"+"\n\n"+   uncommittedChanges.head.map("\tnew file:   " + _).mkString("\n") +"\n" + "\n" + uncommittedChanges.last.map("\tmodified:   " + _).mkString("\n")+ "\n\n" + uncommittedChanges.tail.head.map("\t deleted:   " + _).mkString("\n"))
     }
 
     val modified_unstagedOnes = getUntrackedOrModified(list_wdFiles, index).last
     val deleted_unstagedOnes = getDeletedUnstaged(list_wdFiles, index)
     if (modified_unstagedOnes.nonEmpty || deleted_unstagedOnes.nonEmpty) {
-     println("Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n "+ modified_unstagedOnes.map(m => "modified:   " + File(currentPath).relativize(m) + "\n")+  deleted_unstagedOnes.map(d => "\n deleted:   " + File(currentPath).relativize(File(d))) +"\n")
+     println("Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n "+ modified_unstagedOnes.map(m => "\t modified:   " + File(currentPath).relativize(m) + "\n").mkString("")+  deleted_unstagedOnes.map(d => "\n \t deleted:   " + File(currentPath).relativize(File(d))).mkString("") +"\n")
     }
 
     val untrackedOnes = getUntrackedOrModified(list_wdFiles, index).head
     if (untrackedOnes.nonEmpty) {
-      println("Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + untrackedOnes.map(u => File(currentPath).relativize(u) + "\n"))
+      println("Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + untrackedOnes.map(u => "\t"+ File(currentPath).relativize(u)+ "\n").mkString(""))
     }
     if(!stage.exists) println("On branch master\n\nNo commits yet\n\n")
     else if(uncommittedChanges.isEmpty && list_wdFiles.diff(index.lines.toList).isEmpty){
       println("Your branch is up to date \nnothing to commit, working tree clean")
     }
   }
+  /*---------------log command functions----------------*/
+
+  def log(repoPath: String): Unit = {
+    val logFile = File(repoPath + / + ".sgit" + / + "log" )
+    if (logFile.exists){
+      val commitsResume = logFile.contentAsString.split("\n\n")
+      commitsResume.mkString(" ----------------------------------------")
+    }
+  }
+
 }
 
 object Repository{
