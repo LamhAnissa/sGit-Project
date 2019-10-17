@@ -4,5 +4,6 @@ case class ParserConfig(command: String = "",
                         option: String = "",
                         files: Seq[String] = Seq(),
                         element: String = "",
-                        message: String = ""
+                        message: String = "",
+                        av: Boolean = false
                        )

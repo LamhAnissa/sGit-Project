@@ -39,7 +39,9 @@ object sGit_main extends App {
                 case "diff" => //TODO
                 case "commit" => println(srepository.commit(config.message))
                 case "log" => println(srepository.log(srepository.path))
-                case "branch" => println(srepository.createTagOrCommit(config.element,true,false))
+                case "branch" =>{ if (config.av) println(srepository.listAllRefs())
+                else println(srepository.createTagOrCommit(config.element,true,false))
+                }
                 case "tag" => println(srepository.createTagOrCommit(config.element,false,true))
                 case _ => {
                   println("     Command needed..." )

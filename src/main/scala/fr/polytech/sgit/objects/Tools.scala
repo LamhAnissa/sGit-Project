@@ -41,11 +41,20 @@ object Tools {
   def getAllFiles(directoryPath: String): List[File] = {
     val dirFile = File(directoryPath)
     if (dirFile.exists && dirFile.isDirectory) {
-      File(directoryPath).listRecursively
-        .filterNot(f => f.canonicalPath.contains("/.sgit") || f.isDirectory).toList
+      dirFile.listRecursively.toList.filterNot(f => f.canonicalPath.contains("/.sgit") || f.isDirectory).toList
     }
     else List()
   }
+
+  def getAllRefs(repoPath: String): List[File] = {
+    val dirFile=  File(repoPath + / + ".sgit" + / + "refs")
+    if (dirFile.exists && dirFile.isDirectory) {
+     dirFile.listRecursively.filterNot(f =>f.isDirectory).toList
+    }
+    else List()
+  }
+
+
 
   //Finished
   def getUntrackedOrModified(listFiles:List[File], index:File): List[List[File]] = {

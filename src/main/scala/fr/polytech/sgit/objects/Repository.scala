@@ -343,7 +343,7 @@ case class Repository(val path: String) {
     val refType = isBranchOrTag(branch,tag)
     val refFile = File(path+ / + ".sgit"+ / + "refs"+ / + refType + / +refName)
     if (refFile.exists){
-      "This name is already associated to an existing branch or tag"
+      "This name is already associated to an existing branch or tag"}
       else {
         refFile.createIfNotExists(false)
         val lastCommit = getLastCommit(path,getCurrentHead(path))
@@ -351,16 +351,25 @@ case class Repository(val path: String) {
         s"$refName has been created"
       }
     }
-  }
+
 
   def listAllRefs(): String= {
 
-    /* Récuperer le dossier refs et faire deux listes :
-      Output = tags : -tag <Nom fichier de tag>
-               branch : - branch <Nom fichier de tag>
-               if branch is current branch : (HEAD->branch Name)+ en vert
-    */
-    ""
+    val refsContent = getAllRefs(path)
+    if (refsContent.isEmpty) "No references existing yet"
+    else {val names= refsContent.map(r => {
+      val currentRef = getCurrentHead(path)
+      val nameRef = r.pathAsString.split(/).last
+      val typeRef = r.pathAsString.split(/).dropRight(1).last
+      val lineToPrint = typeRef match{
+        case "headers" => "- " + nameRef + ": branch"
+        case _ => "- " + nameRef + ": tag"
+      }
+      if (nameRef == currentRef) lineToPrint + s" * (HEAD -> $currentRef) "
+      else lineToPrint
+    })
+      names.mkString("\n")
+    }
   }
 }
 

@@ -68,12 +68,12 @@ object Parser {
         .text("Create a new branch")
         .children(
           arg[String]("<branch name>")
-            .required()
+            .optional()
             .action((x, c) => c.copy(element = x))
             .text("name of the branch we want to create"),
           opt[Unit]("av")
-            .action((_, c) => c.copy(option = "av"))
-            .text("List all branches and tags"),
+            .action((_, c) => c.copy(av = true))
+            .text("List all branches and tags")),
 
 
       cmd("checkout")
