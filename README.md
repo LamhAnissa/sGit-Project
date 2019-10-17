@@ -3,6 +3,37 @@
            
 ![alt text](https://i.ibb.co/4tVTVjy/Capture-d-cran-2019-10-11-05-16-38.png)
  A Scala-based git-like code source manager
+ 
+ ## Progression
+ 
+ Installation files : Done :white_check_mark:
+ 
+ ### Create 
+ sgit init : Done :white_check_mark:
+ 
+ ### Local Changes:
+ sgit add : Done :white_check_mark: 
+   sgit commit : Done :white_check_mark: 
+ sgit status :  Done :white_check_mark: 
+ sgit diff:  :interrobang: 
+ 
+  ### Commit history:
+ sgit log :   :soon:
+      , log -p :   :interrobang:
+      , log --stat :   :interrobang:
+ 
+ ### Branches and Tags          
+ sgit checkout : :soon:
+ sgit branch <branch name>:   :soon:
+             -av:   :soon:
+ sgit tag <branch name>:   :soon:
+
+### Merge & Rebase
+sgit merge <branch>:    :soon:
+sgit rebase <branch>:  :soon:
+sgit rebase -i <commit hash or banch name>  :interrobang:
+
+ 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
