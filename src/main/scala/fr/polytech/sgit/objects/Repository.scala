@@ -352,6 +352,16 @@ case class Repository(val path: String) {
       }
     }
   }
+
+  def listAllRefs(): String= {
+
+    /* Récuperer le dossier refs et faire deux listes :
+      Output = tags : -tag <Nom fichier de tag>
+               branch : - branch <Nom fichier de tag>
+               if branch is current branch : (HEAD->branch Name)+ en vert
+    */
+    ""
+  }
 }
 
 object Repository{
