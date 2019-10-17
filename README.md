@@ -13,25 +13,25 @@
  
  ### Local Changes:
  sgit add : Done :white_check_mark: 
- sgit commit : Done :white_check_mark: 
+   sgit commit : Done :white_check_mark: 
  sgit status :  Done :white_check_mark: 
- sgit diff: //TODO :interrobang: 
+ sgit diff:  :interrobang: 
  
   ### Commit history:
- sgit log : //TODO  :soon:
-      log -p :  //TODO :interrobang:
-      log --stat :  //TODO :interrobang:
+ sgit log :   :soon:
+      , log -p :   :interrobang:
+      , log --stat :   :interrobang:
  
  ### Branches and Tags          
- sgit checkout :  //TODO  :soon:
- sgit branch <branch name>: //TODO  :soon:
-             -av: //TODO  :soon:
- sgit tag <branch name>: //TODO  :soon:
+ sgit checkout : :soon:
+ sgit branch <branch name>:   :soon:
+             -av:   :soon:
+ sgit tag <branch name>:   :soon:
 
 ### Merge & Rebase
-sgit merge <branch>:  //TODO  :soon:
-sgit rebase <branch>//TODO  :soon:
-sgit rebase -i <commit hash or banch name> //TODO :interrobang:
+sgit merge <branch>:    :soon:
+sgit rebase <branch>:  :soon:
+sgit rebase -i <commit hash or banch name>  :interrobang:
 
  
 ## Getting Started
