@@ -348,7 +348,7 @@ case class Repository(val path: String) {
         refFile.createIfNotExists(false)
         val lastCommit = getLastCommit(path,getCurrentHead(path))
         refFile.appendLine(lastCommit)
-        s"$refName has been created"
+        s"$refName successfully created"
       }
     }
 
