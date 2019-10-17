@@ -39,7 +39,13 @@ object Parser {
 
       cmd("commit")
         .action((_, c) => c.copy(command = "commit"))
-        .text("Record changes to the repository"),
+        .text("Record changes to the repository").children(
+        opt[String]('m', name = "message")
+          .required()
+          .maxOccurs(1)
+          .action((x, c) => c.copy(message = x))
+          .text("message description to save with the commit")
+      ),
 
       // Commit History
 
