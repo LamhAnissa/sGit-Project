@@ -319,6 +319,39 @@ case class Repository(val path: String) {
     }
   }
 
+  /*--------------- branch, tag command functions----------------*/
+
+
+  /*def branch(repoPath: String, branchName: String): String = {
+    val branchFile = File(repoPath+ / + ".sgit"+ / + "refs"+ / + "headers"+ / +branchName)
+    if (branchFile.exists){
+      "This name is already associated to an existing branch"
+      else {
+        branchFile.createIfNotExists(false)
+        val lastCommit = getLastCommit(repoPath,getCurrentHead(repoPath))
+        branchFile.appendLine(lastCommit)
+        s"$branchName has been created"
+      }
+    }
+    }*/
+
+  def createTagOrCommit(refName: String,  branch: Boolean, tag: Boolean): String= {
+
+    def isBranchOrTag(branch:Boolean,tag:Boolean):String = {if (branch) "headers"
+    else "tags"}
+
+    val refType = isBranchOrTag(branch,tag)
+    val refFile = File(path+ / + ".sgit"+ / + "refs"+ / + refType + / +refName)
+    if (refFile.exists){
+      "This name is already associated to an existing branch or tag"
+      else {
+        refFile.createIfNotExists(false)
+        val lastCommit = getLastCommit(path,getCurrentHead(path))
+        refFile.appendLine(lastCommit)
+        s"$refName has been created"
+      }
+    }
+  }
 }
 
 object Repository{

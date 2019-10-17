@@ -71,13 +71,10 @@ object Parser {
             .required()
             .action((x, c) => c.copy(element = x))
             .text("name of the branch we want to create"),
-          opt[Unit]("a")
-            .action((_, c) => c.copy(option = "a"))
-            .text("List all branches"),
-          opt[Unit]("v")
-            .action((_, c) => c.copy(option = "v"))
-            .text("List for each head: hash and subject")
-        ),
+          opt[Unit]("av")
+            .action((_, c) => c.copy(option = "av"))
+            .text("List all branches and tags"),
+
 
       cmd("checkout")
         .action((_, c) => c.copy(command = "checkout"))

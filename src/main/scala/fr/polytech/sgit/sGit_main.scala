@@ -38,28 +38,10 @@ object sGit_main extends App {
                 case "status" => srepository.status(currentDir)
                 case "diff" => //TODO
                 case "commit" => println(srepository.commit(config.message))
-                case "log" => //TODO
-                case "branch" => //TODO
+                case "log" => println(srepository.log(srepository.path))
+                case "branch" => println(srepository.createTagOrCommit(config.element,true,false))
+                case "tag" => println(srepository.createTagOrCommit(config.element,false,true))
                 case _ => {
-                  val b = List("a")
-                  println(b.tail == Nil)
-
-
-
-                  val map =getTreeContent("fb6e148b92c9dbde5fa7fbd7bb9905448ab79fe9",Map.empty,srepository.path)
-                  println(map + "\n \n")
-                  val c = map.values.flatten
-                  val m = c.map(blobLine => {val cm =blobLine.split("\t").tail
-                    cm.head -> cm.last
-                  }).toMap
-
-
-
-                  println(m)
-
-
-
-
                   println("     Command needed..." )
                  }
                 }
