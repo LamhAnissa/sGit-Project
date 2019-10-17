@@ -12,10 +12,10 @@
  sgit init : Done :white_check_mark:
  
  ### Local Changes:
- sgit add : Done :white_check_mark:
- sgit commit : Done :white_check_mark:
- sgit status :  Done :white_check_mark:
- sgit diff: //TODO :interrobang:
+ sgit add : Done :white_check_mark: \n
+ sgit commit : Done :white_check_mark: 
+ sgit status :  Done :white_check_mark: 
+ sgit diff: //TODO :interrobang: 
  
   ### Commit history:
  sgit log : //TODO  :soon:
