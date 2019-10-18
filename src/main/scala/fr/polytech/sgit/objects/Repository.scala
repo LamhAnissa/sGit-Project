@@ -340,16 +340,19 @@ case class Repository(val path: String) {
     def isBranchOrTag(branch:Boolean,tag:Boolean):String = {if (branch) "headers"
     else "tags"}
 
-    val refType = isBranchOrTag(branch,tag)
-    val refFile = File(path+ / + ".sgit"+ / + "refs"+ / + refType + / +refName)
-    if (refFile.exists){
-      "This name is already associated to an existing branch or tag"}
+    if (!File(path+ / + ".sgit" + / + "log").exists) "Not able to create branches or tags if no existing commits "
+    else{
+      val refType = isBranchOrTag(branch,tag)
+      val refFile = File(path+ / + ".sgit"+ / + "refs"+ / + refType + / +refName)
+      if (refFile.exists){
+        "This name is already associated to an existing branch or tag"}
       else {
         refFile.createIfNotExists(false)
         val lastCommit = getLastCommit(path,getCurrentHead(path))
         refFile.appendLine(lastCommit)
         s"$refName successfully created"
-      }
+      }}
+
     }
 
 
@@ -381,9 +384,9 @@ object Repository{
   def initRepository(path:String): String = {
     if (!isSgitRepository(true, path)) {
       createRepository()
-      "Initialised empty sGit repository in " + path + / +".sgit"
+      "Initialised empty sGit repository in " + path
     }
-    else "Unable to create a repository here:" + path + / +"sgit already existing"
+    else "Unable to create a repository here: "+ path +", it's already a sgit repository"
   }
 
   /* Create the whole sgit folder tree structure */
@@ -393,7 +396,7 @@ object Repository{
     createFileOrDir(".sgit"+ / +"objects" + / + "Blobs", true, false)
     createFileOrDir(".sgit"+ / +"refs" + / +"tags", true, true)
     createFileOrDir(".sgit" + / + "refs"+ / + "headers", true, false)
-    ".sgit"+ / +"HEAD".toFile.createIfNotExists(false,false).appendLine("ref: refs/heads/master\n")
+    File(".sgit"+ / +"HEAD").createIfNotExists(false,false).appendLine("ref: refs/heads/master\n")
   }
 
   /* Check if we are in a sgit repository. Look for the .sgit in current directory, if we haven't returned,

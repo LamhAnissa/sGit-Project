@@ -54,7 +54,12 @@ object Tools {
     else List()
   }
 
-
+  def cleanDirectory(directoryPath: String): Unit ={
+    val dirFile = File(directoryPath)
+    if (dirFile.exists && dirFile.isDirectory) {
+      dirFile.listRecursively.toList.map(file=> file.delete())
+    }
+  }
 
   //Finished
   def getUntrackedOrModified(listFiles:List[File], index:File): List[List[File]] = {

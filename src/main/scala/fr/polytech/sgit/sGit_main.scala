@@ -44,6 +44,8 @@ object sGit_main extends App {
                 }
                 case "tag" => println(srepository.createTagOrCommit(config.element,false,true))
                 case _ => {
+                  cleanDirectory(".sgit/refs/tags")
+
                   println("     Command needed..." )
                  }
                 }

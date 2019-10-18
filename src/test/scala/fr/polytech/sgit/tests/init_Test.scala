@@ -4,6 +4,7 @@ import fr.polytech.sgit.objects.Repository
 import org.scalatest._
 import better.files.{File=> BTFile}
 import java.io.File
+import fr.polytech.sgit.objects.Tools
 
 
 class init_Test extends FlatSpec with BeforeAndAfterEach {
@@ -13,13 +14,14 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
 
     //Mock sgit init before each test
     override def beforeEach(): Unit = {
-      testRepository.initRepository()
+      Repository.initRepository(System.getProperty("user.dir"))
     }
 
     //Clean the working repository after each test
     override def afterEach(): Unit = {
       val sgit_directory= testRepository.path + / + ".sgit"
-      BTFile(sgit_directory).delete()
+      Tools.cleanDirectory(sgit_directory)
+
     }
 
 
@@ -42,7 +44,7 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
     it should "not be possible to initialize a sgit repository if it has been already done" in {
       val pathBis = System.getProperty("user.dir")
       val repo = Repository(pathBis)
-      assert(repo.initRepository() == ("Unable to create a repository here:" + pathBis + / + "sgit already existing"))
+      assert(Repository.initRepository(pathBis) == ("Unable to create a repository here: "+ pathBis +", it's already a sgit repository"))
     }
 
 

@@ -4,6 +4,7 @@ import java.io.{File=>f}
 import fr.polytech.sgit.objects.Repository
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import better.files._
+import fr.polytech.sgit.objects.Tools
 class add_Test extends FlatSpec with BeforeAndAfterEach{
 
   val / = f.separator
@@ -13,7 +14,7 @@ class add_Test extends FlatSpec with BeforeAndAfterEach{
 
     //Create all the examples file test needed.
     override def beforeEach(): Unit = {
-      virginRepo.initRepository()
+      Repository.initRepository(System.getProperty("user.dir"))
       "helloWorld.txt".toFile.createIfNotExists(false,false).appendLine(" Hello World !!")
       "lapin.txt".toFile.createIfNotExists(false,false).appendLine(" Lapin !!")
       "lapin_copie.txt".toFile.createIfNotExists(false,false).appendLine(" Lapin !!")
@@ -23,7 +24,6 @@ class add_Test extends FlatSpec with BeforeAndAfterEach{
     override def afterEach(): Unit = {
       File(indexPath).delete()
       filesforTests.map(f => File(f).delete())
-
     }
 
     " The sgit add command" should "create index file in .sgit if it's the first time we call sgit add <filename> " in {
@@ -36,9 +36,9 @@ class add_Test extends FlatSpec with BeforeAndAfterEach{
     it should "insert new line by each parameters which are not present in the index file, each line containing <sha>\t<filepath> of the parameter" in {
        //Choose the 2 last files in the list of example : lapin.txt, lapin_copie.txt
        val file1_path = File(filesforTests.tail.head).canonicalPath
-       val file1_sha = virginRepo.createHash(file1_path)
+       val file1_sha = Tools.createHash(file1_path)
        val file2_path = File(filesforTests.last).canonicalPath
-       val file2_sha = virginRepo.createHash(file2_path)
+       val file2_sha = Tools.createHash(file2_path)
 
        virginRepo.add(Seq(file1_path,file2_path))
 
