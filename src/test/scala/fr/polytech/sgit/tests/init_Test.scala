@@ -20,7 +20,6 @@ class init_Test extends FlatSpec with BeforeAndAfterEach {
     //Clean the working repository after each test
     override def afterEach(): Unit = {
       val sgit_directory= testRepository.path + / + ".sgit"
-      Tools.cleanDirectory(sgit_directory)
 
     }
 

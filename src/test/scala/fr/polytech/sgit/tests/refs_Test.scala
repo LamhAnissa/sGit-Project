@@ -5,17 +5,21 @@ package fr.polytech.sgit.tests
 import fr.polytech.sgit.objects.Repository
 import fr.polytech.sgit.objects.Tools
 import org.scalatest._
-import better.files.{File=> BTFile}
+import better.files.{File => BTFile}
 import java.io.File
+import scala.reflect.internal.util.FileUtils
+
 
 
   class refs_Test extends FlatSpec with BeforeAndAfterEach {
+
 
     val / = File.separator
     val testRepository = Repository(System.getProperty("user.dir"))
 
 
     override def beforeEach(): Unit = {
+
       Repository.initRepository(System.getProperty("user.dir"))
     }
 
@@ -34,7 +38,7 @@ import java.io.File
         val newBranchFile = BTFile(".sgit"+ / + "refs" + / + "headers"+ / + newBranch)
         val branchTest = BTFile(".sgit"+ / + "refs" + / + "headers"+ / + "branchTest").createIfNotExists(false).appendLine("hashOfLastCommit")
         val headFile = BTFile(".sgit"+ / + "HEAD")
-        headFile.writeText("ref: refs"+ / +"heads"+ / + branchTest)
+        headFile.writeText("ref: refs"+ / +"heads"+ / + branchTest.pathAsString.split(/).last)
 
          // Simulate a commit consequence instead of mocking a Commit
          val logFile = BTFile(".sgit"+ / + "log").createIfNotExists()
@@ -85,10 +89,9 @@ import java.io.File
     "The sGit tag <tagName> command" should "create a file with tagName as name, last commit hash as content, in .sgit/refs/tags" in {
 
       val newTag= "imthenewTag"
-      val newTagFile = BTFile(".sgit"+ / + "refs" + / + "headers"+ / + newTag)
-      val tagTest = BTFile(".sgit"+ / + "refs" + / + "headers"+ / + "tagTest").createIfNotExists(false).appendLine("hashOfLastCommit")
-      val headFile = BTFile(".sgit"+ / + "HEAD")
-      headFile.writeText("ref: refs"+ / +"heads"+ / + tagTest)
+      val newTagFile = BTFile(".sgit"+ / + "refs" + / + "tags"+ / + newTag)
+      val tagTest = BTFile(".sgit"+ / + "refs" + / + "tags"+ / + "tagTest").createIfNotExists(false).appendLine("hashOfLastCommit")
+
 
       // Simulate a commit consequence instead of mocking a Commit
       val logFile = BTFile(".sgit"+ / + "log").createIfNotExists()
