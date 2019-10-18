@@ -25,7 +25,7 @@
  ### Branches and Tags          
  sgit checkout : :soon:
  sgit branch <branch name>:   Done :white_check_mark:
-             -av:   :soon:
+             -av: Done :white_check_mark:
  sgit tag <branch name>:   Done :white_check_mark:
 
 ### Merge & Rebase
