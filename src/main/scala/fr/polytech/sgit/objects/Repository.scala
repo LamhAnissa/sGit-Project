@@ -63,15 +63,19 @@ case class Repository(val path: String) {
    */
   def addFilesToStage(filesToBeStaged: List[String]): Unit = {
 
+    val dirs= filesToBeStaged.filter(f=> File(f).isDirectory)
+    val recFiles= dirs.flatMap(dir => getAllFiles(dir))
+    println("rec"+ recFiles)
+    val textFiles= filesToBeStaged.filterNot(f=> File(f).isDirectory)
+    val allFiles= recFiles.concat(textFiles.map(t=> File(t)))
     if (!stage.exists) {
       stage.createFile()
-      filesToBeStaged.map(f => {
-        val fileContent = File(f).contentAsString
-        val sha = createHash(fileContent)
-        stage.appendLine(s"$sha\t${File(f).canonicalPath}")
-      })
+        allFiles.map(tf => {
+          val fileContent = tf.contentAsString
+         val sha = createHash(fileContent)
+         stage.appendLine(s"$sha\t${tf.canonicalPath}")})
     }
-    else filesToBeStaged.map(f => UpdateIfNeeded(f))
+     else allFiles.map(f => UpdateIfNeeded(f.pathAsString))
   }
 
 
@@ -283,14 +287,13 @@ case class Repository(val path: String) {
    */
   def status(currentPath: String): Unit = {
     val list_wdFiles = getAllFiles(path)
-    val index = stage
 
-  val untrackedOrModified= getUntrackedOrModified(list_wdFiles, index.pathAsString)
+  val untrackedOrModified= getUntrackedOrModified(list_wdFiles, stage.pathAsString)
     if (stage.exists){
 
 
          // firstSubList= newfile not committed, SecondSubList= file commited but modified, ThirdSubList= deleted but still present in last commit
-          val uncommittedChanges = getUncommittedChanges(index,path)
+          val uncommittedChanges = getUncommittedChanges(stage,path)
           println(uncommittedChanges.mkString("\n\n &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" +
             ""))
           if(uncommittedChanges.flatten.nonEmpty){
@@ -299,7 +302,7 @@ case class Repository(val path: String) {
 
 
       val modified_unstagedOnes = untrackedOrModified.last
-      val deleted_unstagedOnes = getDeletedUnstaged(list_wdFiles, index)
+      val deleted_unstagedOnes = getDeletedUnstaged(list_wdFiles, stage)
       if(untrackedOrModified.isEmpty && deleted_unstagedOnes.isEmpty){
         println("Your branch is up to date \nnothing to commit, working tree clean")
       }
