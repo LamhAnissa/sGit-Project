@@ -16,8 +16,13 @@ case class Repository(val path: String) {
 
   /*-----------add command functions----------------*/
 
-  //Finished
+  /**
+   *
+   * @param files : files we want to add
+   * @return Success or Failed message for add process
+   */
   def add(files: Seq[String]): String = {
+
 
     val listCheckedFiles = checkFiles(files, List.empty, List.empty)
     if (listCheckedFiles.last.isEmpty) {
@@ -31,6 +36,13 @@ case class Repository(val path: String) {
 
   }
 
+  /**
+   *
+   * @param files: files we want to check the validity before adding them
+   * @param validNames: files found we keep
+   * @param fails: files not founded so rejected
+   * @return List of valid files for the add process, and files rejected of the add process
+   */
   def checkFiles(files: Seq[String], validNames: List[String], fails: List[String]): List[List[String]] = {
 
     if (files == Nil) List(validNames, fails)
@@ -45,7 +57,10 @@ case class Repository(val path: String) {
     }
   }}
 
-  //Finished
+  /**
+   *
+   * @param filesToBeStaged:  files to add to the index file
+   */
   def addFilesToStage(filesToBeStaged: List[String]): Unit = {
 
     if (!stage.exists) {
@@ -59,7 +74,7 @@ case class Repository(val path: String) {
     else filesToBeStaged.map(f => UpdateIfNeeded(f))
   }
 
-  //Finished
+
   def UpdateIfNeeded(fileToTest: String): Unit = {
 
     val file = File(fileToTest)
@@ -82,7 +97,11 @@ case class Repository(val path: String) {
   /*-----------commit command functions----------------*/
   val repo = File(path)
 
-
+  /**
+   *
+   * @param message:  message to save with the commit
+   * @return: Success or Failed message for commit process
+   */
   def commit(message: String): String = {
 
     //Stage lines
@@ -91,7 +110,6 @@ case class Repository(val path: String) {
     // Commit tree traversal results
     val commit_treeMap = prepareCommit(indexLines)
 
-    // CreateTreeContent(commit_treeMap,path)
     // Information
     val commit_content= commit_treeMap.get("COMMIT_TREE").get.head
     val commit_sha = createHash(commit_content.split("\t").tail.head)
@@ -121,7 +139,7 @@ case class Repository(val path: String) {
       val commit_lines = commit_content + "\n" + "parents : " + "\t" + s"$commit_parent" + "\n"
       val commit_file = File(commitPath).createIfNotExists().writeText(commit_lines)
       val logFile = File(path + / + ".sgit" + / + "log").createIfNotExists(false)
-      logFile.appendLine("Commit: "+commit_sha + "\t" + currentBranch + "\n Date: "+ instant + "\n" + "\t\t" +message +"\n\n")
+      logFile.appendLine("Commit: "+commit_sha + "\t" + currentBranch + "\n Date: "+ instant + "\n" + "\t\t" +message +"\b")
 
       val master_branch = File(path + / + ".sgit" + / + "refs" + / + "headers" + / + currentBranch)
       master_branch.createIfNotExists(false).writeText(commit_sha)
@@ -131,7 +149,11 @@ case class Repository(val path: String) {
     else s"Nothing to commit on $currentBranch"
   }
 
-
+  /**
+   *
+   * @param ftc:  file to commit
+   * @return map corresponding to the index tree (parents -> children)
+   */
   def prepareCommit(ftc: List[String]): Map[String, List[String]] = {
     val parentRepoPath = repo.parent.toString()
 
@@ -155,6 +177,15 @@ case class Repository(val path: String) {
 
   var parents = Map.empty[String, List[String]]
 
+  /**
+   *
+   * @param indexLines:  List of the index lines content
+   * @param childrenList: Map with the parent and children(trees or blobs)
+   * @param deep: the level of the node we are
+   * @param mapReturn: map with the initial index content
+   * @param lastContent: the content of the commit to return
+   * @return a map with reccursive sons of the commit tree
+   */
   def buildIndex_tree(indexLines: List[String], childrenList: Map[String, List[String]], deep: Int, mapReturn: Map[String, String], lastContent: List[Option[String]]): Map[String, List[String]] = {
 
     // Stop condition: We are at the top of the repository (=> we have retrieve the main tree)
@@ -192,7 +223,6 @@ case class Repository(val path: String) {
 
       }
       else {
-        if (deep ==1) println("All files ==="+ allFiles)
         val parentMapChildren = getChildrenByParent(pathsList = allFiles, mapReturn)
         val lastTree=dirs.map(dir => {
           val dirName = dir.split(/).last
@@ -214,7 +244,12 @@ case class Repository(val path: String) {
     }
   }
 
-
+  /**
+   *
+   * @param pathsList: the path from which we want to retrieve the parents
+   * @param map: previous map with parent children that we want to update
+   * @return new map up to date with the new paths is parents
+   */
   def getChildrenByParent(pathsList: List[List[String]], map: Map[String, String]): Map[String, List[String]] = {
 
     val parent = pathsList.map(f = pwk => {
@@ -230,6 +265,11 @@ case class Repository(val path: String) {
     parents
   }
 
+  /**
+   *
+   * @param key the parent
+   * @param value the childrens
+   */
   def addChildrenToParent(key: String, value: String): Unit = {
     parents += (key -> (value :: (parents get key getOrElse Nil)))
   }
@@ -237,7 +277,10 @@ case class Repository(val path: String) {
 
   /*-----------status command functions----------------*/
 
-  //change le retour en string
+  /**
+   *
+   * @param currentPath: path from where we called this method
+   */
   def status(currentPath: String): Unit = {
     val list_wdFiles = getAllFiles(path)
     val index = stage
@@ -245,7 +288,7 @@ case class Repository(val path: String) {
   val untrackedOrModified= getUntrackedOrModified(list_wdFiles, index.pathAsString)
     if (stage.exists){
 
-      
+
          // firstSubList= newfile not committed, SecondSubList= file commited but modified, ThirdSubList= deleted but still present in last commit
           val uncommittedChanges = getUncommittedChanges(index,path)
           println(uncommittedChanges.mkString("\n\n &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" +
@@ -278,14 +321,22 @@ case class Repository(val path: String) {
   def log(repoPath: String): Unit = {
     val logFile = File(repoPath + / + ".sgit" + / + "log" )
     if (logFile.exists){
-      val commitsResume = logFile.contentAsString.split("\n\n")
-      commitsResume.mkString(" ----------------------------------------")
+      val commitsResume = logFile.contentAsString.split("\b").mkString("\n\t-------------------------------------")
+      println(commitsResume)
+
     }
+   else  println("No commits yet")
   }
 
   /*--------------- branch, tag command functions----------------*/
 
-
+  /**
+   *
+   * @param refName: name of the commit or tag
+   * @param branch: boolean which indicates if we want to create a branch
+   * @param tag: boolean which indicates if we want to create a tag
+   * @return Success or Failed message for branch or tag process
+   */
   def createTagOrCommit(refName: String,  branch: Boolean, tag: Boolean): String= {
 
     def isBranchOrTag(branch:Boolean,tag:Boolean):String = {if (branch) "headers"
@@ -306,7 +357,10 @@ case class Repository(val path: String) {
 
     }
 
-
+  /**
+   *
+   * @return All the tags or branches existing
+   */
   def listAllRefs(): String= {
 
     val refsContent = getAllRefs(path)
@@ -326,13 +380,6 @@ case class Repository(val path: String) {
       names.mkString("\n")
     }
   }
-    /*--------------- checkout command functions----------------*/
-
-    def checkout(ref: String): Unit = {
-
-
-    }
-
 
 }
 
@@ -340,7 +387,11 @@ object Repository{
 
   /*---------------init command functions----------------*/
 
-  /* Initialize the sgit repository if it's not already done*/
+  /**
+   *
+   * @param path: the path where we want to create our repository
+   * @return Initialize the sgit repository if it's not already done
+   */
   def initRepository(path:String): String = {
     if (!isSgitRepository(true, path)) {
       createRepository()
@@ -359,8 +410,12 @@ object Repository{
     File(".sgit"+ / +"HEAD").createIfNotExists(false,false).appendLine("ref: refs/heads/master\n")
   }
 
-  /* Check if we are in a sgit repository. Look for the .sgit in current directory, if we haven't returned,
-  recurse in parent
+
+  /**
+   *
+   * @param init:  if we are calling the function by the init process
+   * @param pathToTest: path we want to check
+   * @return true if is a sgit repository, false otherwise
    */
   def isSgitRepository(init: Boolean, pathToTest: String): Boolean = {
     init match {
@@ -369,7 +424,11 @@ object Repository{
     }
   }
 
-  /* Return the sgit repository path by looking reccursively in the parent's folder
+
+  /**
+   *
+   * @param pathToTest: path from where we are calling this function
+   * @return the sgit repository path by looking reccursively in the parent's folder
    */
   def getRepositoryPath(pathToTest: String): Option[String] = {
     val possible_sgitpath = File(s"$pathToTest${/}.sgit")

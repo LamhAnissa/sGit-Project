@@ -13,17 +13,32 @@ object Tools {
   val / = F.separator
 
   /* --------- Tools for files ------------- */
-  //Finished
+
+  /**
+   *
+   * @param content: file's content we want to hash
+   * @return the checksum by sha1
+   */
   def createHash(content: String): String = {
     val md = java.security.MessageDigest.getInstance("SHA-1")
     md.digest(content.getBytes("UTF-8")).map("%02x".format(_)).mkString
   }
 
-  //Finished
+  /**
+   *
+   * @param name: name of the file or directory
+   * @param isdir: true if is a directory, false otherwise
+   * @param parents: true if we want to create all the path's structure, false otherwise
+   */
   def createFileOrDir(name: String, isdir: Boolean, parents: Boolean): Unit = name.toFile.createIfNotExists(isdir, parents)
 
 
-  //Finished
+  /**
+   *
+   * @param lines: index lines content
+   * @param file: the file we want to check
+   * @return
+   */
   def checklines(lines: List[String], file: wdFile): String = {
 
     val containsSha = lines.head.contains(file.sha)
@@ -38,6 +53,11 @@ object Tools {
     }
   }
 
+  /**
+   *
+   * @param directoryPath: directory on wich we want to retrieve the content reccursivly
+   * @return
+   */
   def getAllFiles(directoryPath: String): List[File] = {
     val dirFile = File(directoryPath)
     if (dirFile.exists && dirFile.isDirectory) {
@@ -46,6 +66,7 @@ object Tools {
     else List()
   }
 
+  //Retrieve  the whole content of the refs folder
   def getAllRefs(repoPath: String): List[File] = {
     val dirFile=  File(repoPath + / + ".sgit" + / + "refs")
     if (dirFile.exists && dirFile.isDirectory) {
@@ -54,6 +75,7 @@ object Tools {
     else List()
   }
 
+  // Checkout command
   def cleanDirectory(directoryPath: String): Unit ={
     val dirFile = File(directoryPath)
     if (dirFile.exists && dirFile.isDirectory) {
@@ -61,7 +83,12 @@ object Tools {
     }
   }
 
-  //Finished
+  /**
+   *
+   * @param listFiles: files we want to check
+   * @param index: index path
+   * @return list containing a list of untracked files and another one with tracked but modified files
+   */
   def getUntrackedOrModified(listFiles:List[File], index:String): List[List[File]] = {
 
     def loop(filesToTest: List[File], untrackedFiles: List[File], modifiedFiles: List[File]): List[List[File]] = {
@@ -87,8 +114,12 @@ object Tools {
   }
 
 
-
-  //Finished
+  /**
+   *
+   * @param list_wdFiles: list files we want to chek
+   * @param index: index file
+   * @return List of files which are tracked and have been deleted
+   */
   def getDeletedUnstaged(list_wdFiles: List[File],index: File): List[String]= {
     val lines= index.lines.map(l=>l.split("\t").last)
     lines.filterNot(l=> {
@@ -100,14 +131,23 @@ object Tools {
 
   /* Check if the file is already staged, if it's not : add it to stage else nothing */
 
-  // Finished
+  /**
+   *
+   * @param wdfile file we want to check the state
+   * @param index index file
+   * @return state between three possibilities : Untracked, Modified and Staged
+   */
   def getState(wdfile: wdFile, index: File): String= { val indexlines = index.lines.toList
     checklines(indexlines,wdfile)
   }
 
   /* --------- Tools for commit ------------- */
 
-// Finished
+  /**
+   *
+   * @param path is the repository path
+   * @return branch contained in HEAD file, the current branch
+   */
   def getCurrentHead(path:String):String= {
     val head_file = File(path + / +".sgit"+ / +"HEAD").lines.head
     val head_name = head_file.split(/).last
@@ -115,21 +155,40 @@ object Tools {
 
   }
 
+  /**
+   *
+   * @param indexPaths paths we want to update
+   * @param deep the lenght of the paths we want
+   * @return list updated of index content
+   */
   def updateIndexPaths(indexPaths: List[String], deep: Int): List[String] = {
     indexPaths.map(sp => if (sp.split(/).size == deep) {
-      sp.split(/).dropRight(1).mkString("/")
+      val s= sp.split(/).dropRight(1).mkString("/")
+      s
     }
     else sp
     )
   }
 
-  //Finished
+  /**
+   *
+   * @param path: repository path
+   * @param branch name of the branch
+   * @return sha of the last commit
+   */
   def getLastCommit(path: String, branch:String): String={
     val branch_file= File(path + / +".sgit"+ / +"refs"+ / +"headers"+ / +branch)
     if (branch_file.exists) branch_file.contentAsString
     else ""
   }
 
+  /**
+   *
+   * @param treeSha: sha of the current tree
+   * @param mapContent: map with the whole commit tree structure
+   * @param path: repository path
+   * @return
+   */
   def getTreeContent(treeSha:String, mapContent: Map[String,List[String]], path: String):Map[String,List[String]] = {
 
     val mainTree_content = File(".sgit" + / + "objects"+ / + "Trees" + / + treeSha).lines.toList
@@ -149,6 +208,11 @@ object Tools {
     else mapTemp
   }
 
+  /**
+   *
+   * @param mapContent map with the whole commit tree structure
+   * @param path repository path
+   */
   def createTreeContent(mapContent: Map[String,List[String]], path: String): Unit = {
 
     val values = mapContent.values.toList
@@ -161,7 +225,13 @@ object Tools {
     if(trees.nonEmpty) createTrees(trees, mapContent,path)
   }
 
-
+  /**
+   *
+   *
+   * @param trees: list of trees to create
+   * @param mapDir: map with the trees and their contents
+   * @param path repository path
+   */
   def createTrees(trees:List[String],mapDir: Map[String,List[String]],path: String): Unit ={
 
     if (trees == Nil){}
@@ -182,14 +252,11 @@ object Tools {
   }
 
 
-
-
-
-
-
-
-
-  //values.empty
+  /**
+   *
+   * @param files list of blobs to create
+   * @param path repository path
+   */
   def createBlobObjects(files:List[String],path:String): Unit = {
 
     if(files == Nil){}
@@ -206,7 +273,15 @@ object Tools {
       createBlobObjects(files.tail,path)}
 
   }
-//  List[List[File]
+
+  /**
+   *
+   * @param index: index file
+   * @param path: repository path
+   * @return list with : -list og files staged but not ever commited, thenewstaged_uncommitted,modified_committedOnes,deleted_uncommittedOnes)
+   *         list of files staged already commited but then modified
+   *         list of files staged but then deleted
+   */
   def getUncommittedChanges(index: File, path: String):List[List[String]]={
 
     val lastCommit = getLastCommit(path,getCurrentHead(path))
