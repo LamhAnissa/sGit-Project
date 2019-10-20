@@ -40,56 +40,56 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+Before starting to run the application, the following dependencies must be installed :
 
-```
-Give examples
-```
+
+sbt version 1.3.2            	  			scala version  2.12.6  
+
 
 ### Installing
 
 A step by step series of examples that tell you how to get a development env running
 
-Say what the step will be
+Import code source
 
 ```
-Give the example
+> git clone https://github.com/LamhAnissa/sGit-Project.git
 ```
 
-And repeat
+Execute the first script :  sgit_prepocessing.sh
 
 ```
-until finished
+> ./sgit_preprocessing.sh
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
 
+Source the first script :  sgit_prepocessing.sh
+
+```
+> source sgit_preprocessing.sh
+```
+
+Now you can use the sgit command:
+```
+> sgit command [option] <arguments>
+
+```
 ## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
 ```
-Give an example
+> sbt test
 ```
 
-```
-Give an example
-```
 
 ## Built With
 
-* [](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* https://github.com/pathikrit/better-files -  dependency-free pragmatic thin Scala wrapper around Java NIO.
+* https://github.com/scopt/scopt - scopt is a little command line options parsing library.
+* https://www.scala-sbt.org/ - Interactive build tool
 
 
 ## Authors
 
-* **Anissa LAMHAOUAR** - *Initial work* - Polytech Montpellier
+* **Anissa LAMHAOUAR** - *Initial work* Computer science and management - Polytech Montpellier
 
 
 
