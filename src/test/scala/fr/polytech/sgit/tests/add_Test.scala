@@ -6,7 +6,7 @@ import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import better.files._
 import fr.polytech.sgit.objects.Tools
 class add_Test extends FlatSpec with BeforeAndAfterEach{
-
+/*
   val / = f.separator
   val virginRepo = Repository(System.getProperty("user.dir"))
   val indexPath: String = virginRepo.path + / +".sgit/index"
@@ -47,5 +47,5 @@ class add_Test extends FlatSpec with BeforeAndAfterEach{
       assert((File(indexPath).lines.toList.filter(l => l.contains(file2_sha+ "\t" +file2_path))).isEmpty)
     }
 
-
+*/
 }

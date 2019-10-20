@@ -40,7 +40,7 @@ object Parser {
       cmd("commit")
         .action((_, c) => c.copy(command = "commit"))
         .text("Record changes to the repository").children(
-        opt[String]('m', name = "message")
+        opt[String]('m', "message")
           .required()
           .maxOccurs(1)
           .action((x, c) => c.copy(message = x))

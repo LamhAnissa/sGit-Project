@@ -25,7 +25,6 @@ object sGit_main extends App {
   OParser.parse(Parser.parser, args, ParserConfig()) match {
 
     case Some(config) => {
-      println(config.command)
       config.command match {
         case "init" => println(Repository.initRepository(currentDir))
         case _ => {
@@ -43,11 +42,8 @@ object sGit_main extends App {
                 else println(srepository.createTagOrCommit(config.element,true,false))
                 }
                 case "tag" => println(srepository.createTagOrCommit(config.element,false,true))
-                case _ => {
-                  cleanDirectory(".sgit/refs/tags")
+                case _ => println("     Command needed..." )
 
-                  println("     Command needed..." )
-                 }
                 }
               }
             case _ => println("Failed: You are not in a sgit repository")
