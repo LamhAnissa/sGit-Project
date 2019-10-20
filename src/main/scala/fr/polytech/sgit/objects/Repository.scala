@@ -384,6 +384,25 @@ case class Repository(val path: String) {
     }
   }
 
+
+/*
+  def checkout(element: String): Unit ={
+
+    val untracked= getUntrackedOrModified(getAllFiles(path),stage.pathAsString).head
+    if (untracked.nonEmpty) println("Add your files before making a checkout,\n Use: sgit add <filename>")
+    else {
+      val refsPath= path+ / + ".sgit"+ / + "refs"
+      val filesRepo= getAllFiles(refsPath)
+      val element= filesRepo.filter(f=> f.contains(element))
+      if (element.nonEmpty) {
+        cleanDirectory(path)
+        val commitRef= element.head.contentAsString
+        val treeContent=getTreeContent(commitRef, Map.empty, path)
+
+      }
+    }
+  }
+*/
 }
 
 object Repository{
