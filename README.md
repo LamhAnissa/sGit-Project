@@ -15,11 +15,11 @@
  sgit add : Done :white_check_mark: 
    sgit commit : Done :white_check_mark: 
  sgit status :  Done :white_check_mark: 
- sgit diff:  :interrobang: 
+ sgit diff:  Done :white_check_mark:
  
   ### Commit history:
  sgit log :   :soon:
-      , log -p :   :interrobang:
+      , log -p :   Done :white_check_mark:
       , log --stat :   :interrobang:
  
  ### Branches and Tags          
