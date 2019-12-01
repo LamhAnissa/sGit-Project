@@ -304,14 +304,14 @@ case class Repository(val path: String) {
          // firstSubList= newfile not committed, SecondSubList= file commited but modified, ThirdSubList= deleted but still present in last commit
           val uncommittedChanges = getUncommittedChanges(stage,path)
           if(uncommittedChanges.flatten.nonEmpty){
-            println("Changes to be committed:"+"\n\n"+ Console.GREEN + uncommittedChanges.head.map(m=> "\tnew file:   " + File(currentPath).relativize(File(m))).mkString("\n") + Console.WHITE + "\n" + uncommittedChanges.tail.head.map(m=> Console.GREEN +  "\tmodified:   " +  File(currentPath).relativize(File(m))).mkString("\n")+ Console.WHITE+ "\n\n" )
+            println("Changes to be committed:"+"\n"+ Console.GREEN + uncommittedChanges.head.map(m=> "\tnew file:   " + File(currentPath).relativize(File(m))).mkString("\n") + Console.WHITE + "\n" + uncommittedChanges.tail.head.map(m=> Console.GREEN +  "\tmodified:   " +  File(currentPath).relativize(File(m))).mkString("\n")+ Console.WHITE+ "\n" )
           }
 
 
       val modified_unstagedOnes = untrackedOrModified.last
 
       if(untrackedOrModified.flatten.isEmpty && uncommittedChanges.flatten.isEmpty ){
-        println("Your branch is up to date \nnothing to commit, working tree clean")
+        println("nothing to commit, working tree clean")
       }
       else if (modified_unstagedOnes.nonEmpty) {
         println("Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n "+ modified_unstagedOnes.map(m => Console.GREEN +"\t modified:   " + File(currentPath).relativize(m) + "\n").mkString("")+ Console.WHITE +"\n")
@@ -362,7 +362,7 @@ case class Repository(val path: String) {
       printCommitLines(path,commit)
       commitContent.foreach(line => {
         val filename = line.split("\t").last
-        println(Console.BLUE + s"diff --sgit a/$filename  b/$filename  "+ "\n newfile \n" + Console.WHITE)
+        println(Console.BLUE + s"diff --sgit a/$filename  b/$filename  "+ "\n newfile" + Console.WHITE)
       })
     }
 else{ val parentContent = getContentFromCommit(path,parentCommit)

@@ -208,7 +208,7 @@ object Tools {
       if (line.startsWith("+")) Console.GREEN + line
       else if (line.startsWith("-")) Console.RED + line
       else Console.WHITE + line
-    }).mkString("\n") + "\n" + Console.WHITE
+    }).mkString("\n") + Console.WHITE
     println(Console.BLUE + "diff  --sgit  a/"+ name + "  b/"+ name +"\n\n"+ finalDiff + "\n")
   }
 
