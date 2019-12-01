@@ -53,8 +53,9 @@ object Parser {
         .action((_, c) => c.copy(command = "log"))
         .text("Show commit logs")
         .children(
-          opt[Unit]("p")
-            .action((_, c) => c.copy(option = "p"))
+          opt[Unit]('p', "patch")
+            .optional()
+            .action((_, c) => c.copy(option= "p"))
             .text("Show changes overtime"),
           opt[Unit]("stat")
             .action((_, c) => c.copy(option = "stat"))

@@ -32,7 +32,7 @@ import scala.reflect.internal.util.FileUtils
       headFile.writeText("ref: refs" + / + "heads" + / + "master")
       val logFile = BTFile(".sgit" + / + "log").delete()
     }
-  
+
  /*   //For sgit branch command
     "The sGit branch <branchName> command" should "create a file with branchName as name, last commit hash as content, in .sgit/refs/headers" in {
       val newBranch = "imthenewBranch"

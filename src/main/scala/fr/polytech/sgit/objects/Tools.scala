@@ -182,6 +182,46 @@ object Tools {
     else ""
   }
 
+  def getParentCommit(path: String, sha:String): String={
+    val commit_file= File(path + / +".sgit"+ / +"objects"+ / +"Commits"+ / +sha)
+    val content= commit_file.lines.toList
+    val parentLine = content.tail.head
+    val parent = parentLine.split("\t").last
+    parent
+  }
+
+  def getContentFromCommit(path: String, sha:String): List[String]={
+    val commit_file= File(path + / +".sgit"+ / +"objects"+ / +"Commits"+ / +sha)
+    val content= commit_file.lines.toList
+
+    val treeLine = content.head
+    val tree = treeLine.split("\t").tail.head
+    val CommitBlobsLine= getTreeContent(tree,Map.empty,path).values.toList.flatten
+    val CommitBlobs = CommitBlobsLine.map(line => {
+      line.split("blob\t").last
+    })
+    CommitBlobs
+  }
+
+  def printDiff(name: String,result : List[String]): Unit ={
+    val finalDiff = result.map( line => {
+      if (line.startsWith("+")) Console.GREEN + line
+      else if (line.startsWith("-")) Console.RED + line
+      else Console.WHITE + line
+    }).mkString("\n") + "\n" + Console.WHITE
+    println(Console.BLUE + "diff  --sgit  a/"+ name + "  b/"+ name +"\n\n"+ finalDiff + "\n")
+  }
+
+  def printCommitLines(path:String, sha:String): Unit ={
+    val commit_file= File(path + / +".sgit"+ / +"objects"+ / +"Commits"+ / +sha).lines.toList
+    val message = commit_file(2).split("\t").last
+    val date = commit_file(3).split("\t").last
+    println(Console.YELLOW + "commit " + sha + "  (" + Console.CYAN + "HEAD -> " + Console.GREEN + getCurrentHead(path) + Console.YELLOW + ")" +
+      Console.WHITE + "\nDate: " + date + "\n\n\t" + message + "\n")
+
+  }
+
+
   /**
    *
    * @param treeSha: sha of the current tree
@@ -289,6 +329,7 @@ object Tools {
     val commitContent = File(path+ / + ".sgit" + / + "objects" + / + "Commits" + / + lastCommit).contentAsString
 
     val commitTreeLine= commitContent.split("\n").head
+
     val commitTree = commitTreeLine.split("\t").tail.head
 
     val mapCommitTree = getTreeContent(commitTree,Map.empty,path)
@@ -302,14 +343,23 @@ object Tools {
        cm.last -> cm.head
     }).toMap
 
-    val parentpath = File(path).parent.pathAsString + /
-    val indexContent= index.lines.toList.map(line => line.split(parentpath).last)
+      val parentpath = File(path).parent.pathAsString + /
 
-    /* First case :  new file(s) wich had been added to index but never commited before
+
+    val indexContent= index.lines.toList.map(line => {
+      val name = line.split(parentpath).last
+      val sha = line.split("\t").head
+      name -> sha
+    }).toMap
+
+
+    /* First case :  new file(s) which had been added to index but never commited before
     --Check if file's name present in index but not in commit content*/
+
     val newstaged_uncommitted= indexContent.filterNot(line => {
-      blobs_map.keys.toList.contains(line)
-    })
+      blobs_map.keys.toList.contains(line._1)
+    }).keys.toList
+
 
 
     /* Second case : These are the files that have been deleted but not commited yet
@@ -318,8 +368,13 @@ object Tools {
 
 
     /* Third case : These are the files that have been modified but not commited yet
-    --Check if file's name present in the last commit but not in the index */
-    val modified_committedOnes = blobs_map.filter(line => indexContent.contains(line._2) && !indexContent.contains(line._1)).keys.toList
+    --Check if file's sha present in the last commit but not in the index */
+
+   val modified_committedOnes1 =blobs_map.filter(line => indexContent.keys.toList.contains(line._1) && !indexContent.values.toList.contains(line._2))
+     val modified_committedOnes = modified_committedOnes1.keys.toList
+
+
+    //  val modified_committedOnes = List.empty
     List(newstaged_uncommitted,modified_committedOnes,deleted_uncommittedOnes)}
 
    else {val newFiles = index.lines.toList.map(l=> l.split("\t").last)

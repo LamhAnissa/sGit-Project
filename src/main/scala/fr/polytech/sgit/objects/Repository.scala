@@ -2,10 +2,13 @@ package fr.polytech.sgit.objects
 
 import better.files._
 import java.io.{FileWriter, File => f}
-import java.time.Instant
+import java.util.Calendar
 
 import wdFile._
 import Tools._
+
+import scala.annotation.tailrec
+import scala.math.max
 
 case class Repository(val path: String) {
 
@@ -65,7 +68,6 @@ case class Repository(val path: String) {
 
     val dirs= filesToBeStaged.filter(f=> File(f).isDirectory)
     val recFiles= dirs.flatMap(dir => getAllFiles(dir))
-    println("rec"+ recFiles)
     val textFiles= filesToBeStaged.filterNot(f=> File(f).isDirectory)
     val allFiles= recFiles.concat(textFiles.map(t=> File(t)))
     if (!stage.exists) {
@@ -91,7 +93,10 @@ case class Repository(val path: String) {
       if (res == "Modified") {
         val newcontent = stage.lines.toList.filterNot(l => l.contains(filepath))
         val filewriter = new FileWriter(stage.canonicalPath)
-        filewriter.write(newcontent.mkString("\n") + "\n")
+        if (newcontent!= Nil){
+          filewriter.write(newcontent.mkString("\n") + "\n")
+        }
+        else filewriter.write( "")
         filewriter.close()
       }
       stage.appendLine(s"$sha\t$filepath")
@@ -123,7 +128,7 @@ case class Repository(val path: String) {
     // If log file doesnt exists => It's the first commit
     val isfirstcommit = !File(path + / + ".sgit" + / + "log").exists
 
-    var commit_parent = ""
+    var commit_parent = " "
     val currentBranch = getCurrentHead(path)
     println(currentBranch)
     var todo = true
@@ -139,11 +144,11 @@ case class Repository(val path: String) {
     }
     // New Commit to add (case first commit or different commit)
     if (todo) {
-      val instant = Instant.now().toString
-      val commit_lines = commit_content + "\n" + "parents : " + "\t" + s"$commit_parent" + "\n"
+      val instant = Calendar.getInstance.getTime
+      val commit_lines = commit_content + "\n" + "parents : " + "\t" + s"$commit_parent" + "\n" + "message : "+ "\t"+ message + "\n" +  "Date : "+ "\t" + instant
       val commit_file = File(commitPath).createIfNotExists().writeText(commit_lines)
       val logFile = File(path + / + ".sgit" + / + "log").createIfNotExists(false)
-      logFile.appendLine("Commit: "+commit_sha + "\t" + currentBranch + "\n Date: "+ instant + "\n" + "\t\t" +message +"\b")
+      logFile.appendLine("commit "+commit_sha + "\t" + "(HEAD -> " + currentBranch + ")" + "\n Date: "+ instant + "\n" + "\t\t" +message +"\b")
 
       val master_branch = File(path + / + ".sgit" + / + "refs" + / + "headers" + / + currentBranch)
       master_branch.createIfNotExists(false).writeText(commit_sha)
@@ -287,33 +292,35 @@ case class Repository(val path: String) {
    */
   def status(currentPath: String): Unit = {
     val list_wdFiles = getAllFiles(path)
-
+    val branch = getCurrentHead(path)
+    println( s"On branch $branch  \n")
+    if (getLastCommit(path, branch)== "") println("No commits yet \n")
   val untrackedOrModified= getUntrackedOrModified(list_wdFiles, stage.pathAsString)
+
+
     if (stage.exists){
 
 
          // firstSubList= newfile not committed, SecondSubList= file commited but modified, ThirdSubList= deleted but still present in last commit
           val uncommittedChanges = getUncommittedChanges(stage,path)
-          println(uncommittedChanges.mkString("\n\n &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" +
-            ""))
           if(uncommittedChanges.flatten.nonEmpty){
-            println("Changes to be committed:"+"\n\n"+   uncommittedChanges.head.map(m=> "\tnew file:   " + File(currentPath).relativize(File(m))).mkString("\n") +"\n" + "\n" + uncommittedChanges.last.map(m=> "\tmodified:   " +  File(currentPath).relativize(File(m))).mkString("\n")+ "\n\n" + uncommittedChanges.tail.head.map(m=>"\t deleted:   " +  File(currentPath).relativize(File(m))).mkString("\n"))
+            println("Changes to be committed:"+"\n\n"+ Console.GREEN + uncommittedChanges.head.map(m=> "\tnew file:   " + File(currentPath).relativize(File(m))).mkString("\n") + Console.WHITE + "\n" + uncommittedChanges.tail.head.map(m=> Console.GREEN +  "\tmodified:   " +  File(currentPath).relativize(File(m))).mkString("\n")+ Console.WHITE+ "\n\n" )
           }
 
 
       val modified_unstagedOnes = untrackedOrModified.last
-      val deleted_unstagedOnes = getDeletedUnstaged(list_wdFiles, stage)
-      if(untrackedOrModified.isEmpty && deleted_unstagedOnes.isEmpty){
+
+      if(untrackedOrModified.flatten.isEmpty && uncommittedChanges.flatten.isEmpty ){
         println("Your branch is up to date \nnothing to commit, working tree clean")
       }
-      else if (modified_unstagedOnes.nonEmpty || deleted_unstagedOnes.nonEmpty) {
-        println("Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n "+ modified_unstagedOnes.map(m => "\t modified:   " + File(currentPath).relativize(m) + "\n").mkString("")+  deleted_unstagedOnes.map(d => "\n \t deleted:   " + File(currentPath).relativize(File(d)) ).mkString("") +"\n")
+      else if (modified_unstagedOnes.nonEmpty) {
+        println("Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n "+ modified_unstagedOnes.map(m => Console.GREEN +"\t modified:   " + File(currentPath).relativize(m) + "\n").mkString("")+ Console.WHITE +"\n")
 
       }}
 
     val untrackedOnes = untrackedOrModified.head
     if (untrackedOnes.nonEmpty) {
-      println("Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + untrackedOnes.map(u => "\t"+ File(currentPath).relativize(u)+ "\n").mkString(""))
+      println("Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + Console.RED + untrackedOnes.map(u => "\t"+ File(currentPath).relativize(u)+ "\n").mkString("") +Console.WHITE)
       }
     else if (!stage.exists) println("\t No staged or commited files yet \n")
 
@@ -321,16 +328,73 @@ case class Repository(val path: String) {
   }
   /*---------------log command functions----------------*/
 
-  def log(repoPath: String): Unit = {
-    val logFile = File(repoPath + / + ".sgit" + / + "log" )
-    if (logFile.exists){
-      val commitsResume = logFile.contentAsString.split("\b").mkString("\n\t-------------------------------------")
-      println(commitsResume)
+  def log(repoPath: String, option: String): Unit = {
 
+    val currentBranch = getCurrentHead(path)
+    val logFile = File(repoPath + / + ".sgit" + / + "log" )
+
+    if (logFile.exists){
+      if (option!="p"){
+        val commitsResume = logFile.contentAsString.split("\b").mkString("\n\n")
+        println(commitsResume)
+      }
+      else logOptionP(currentBranch)
     }
-   else  println("No commits yet")
+   else  {
+
+      println(s"fatal: your current branch $currentBranch does not have any commits yet")}
   }
 
+  def logOptionP(currentBranch: String): Unit = {
+
+    //1. Si il n'y a qu'un seul commit (commit.parent not exist)
+    val lastCommit = getLastCommit(path,currentBranch)
+    val lastParentCommit = getParentCommit(path, lastCommit)
+
+    logOptionPRecc(lastCommit, lastParentCommit)
+  }
+
+  def logOptionPRecc( commit:String, parentCommit:String): Unit ={
+
+    val commitContent = getContentFromCommit(path,commit)
+
+    if(parentCommit == " "){
+      printCommitLines(path,commit)
+      commitContent.foreach(line => {
+        val filename = line.split("\t").last
+        println(Console.BLUE + s"diff --sgit a/$filename  b/$filename  "+ "\n newfile \n" + Console.WHITE)
+      })
+    }
+else{ val parentContent = getContentFromCommit(path,parentCommit)
+      val newFiles = commitContent.filter(line => parentContent.contains(line))
+      val modifiedFiles = commitContent.filterNot(line=> newFiles.contains(line))
+      printCommitLines(path,commit)
+      if (newFiles.nonEmpty){
+        newFiles.map(line => {
+          val splitted = line.split("\t")
+          val blobsha= splitted.head
+          val fileName = splitted.last
+          val newLines = File(path + / + ".sgit"+ / +"objects"+ / + "Blobs" + / + blobsha).lines
+          val res = newLines.map("+"+_).toList
+          printDiff(fileName,res)
+        })
+      }
+
+      if (modifiedFiles.nonEmpty){
+        modifiedFiles.map(line=> {
+          val splitted = line.split("\t")
+          val childBlobsha= splitted.head
+          val fileName = splitted.last
+          val newContent= File(path + / + ".sgit"+ / +"objects"+ / + "Blobs" + / + childBlobsha).lines.toList
+          val parentBlobsha= parentContent.find(l=> l.split("\t").last == fileName).get.split("\t").head
+          val oldContent= File(path + / + ".sgit"+ / +"objects"+ / + "Blobs" + / + parentBlobsha).lines.toList
+          printDiff(fileName, getDiff(oldContent,newContent))
+        })
+      }
+      val parentCommitRecc = getParentCommit(path, parentCommit)
+      if (parentCommit!= " ") logOptionPRecc(parentCommit, parentCommitRecc)
+    }
+  }
   /*--------------- branch, tag command functions----------------*/
 
   /**
@@ -384,25 +448,79 @@ case class Repository(val path: String) {
     }
   }
 
+  /*--------------- diff command functions----------------*/
 
-/*
-  def checkout(element: String): Unit ={
+  def diff(): Unit = {
 
-    val untracked= getUntrackedOrModified(getAllFiles(path),stage.pathAsString).head
-    if (untracked.nonEmpty) println("Add your files before making a checkout,\n Use: sgit add <filename>")
-    else {
-      val refsPath= path+ / + ".sgit"+ / + "refs"
-      val filesRepo= getAllFiles(refsPath)
-      val element= filesRepo.filter(f=> f.contains(element))
-      if (element.nonEmpty) {
-        cleanDirectory(path)
-        val commitRef= element.head.contentAsString
-        val treeContent=getTreeContent(commitRef, Map.empty, path)
 
-      }
+    //1. Récupère les fichiers du WD
+    val list_wdFiles = getAllFiles(path)
+    val index= stage.pathAsString
+    //2. On récupère les fichiers modifiés
+
+    val modifiedOnes= getUntrackedOrModified(list_wdFiles, index).last;
+    if (modifiedOnes.nonEmpty) {
+      modifiedOnes.map(wdFile => {
+        val newContent = wdFile.lines.toList
+        val sameFileInStage= File(index).lines.toList.filter(line => line.contains(wdFile.pathAsString)).head;
+        println(sameFileInStage)
+
+        val BlobHash = sameFileInStage.split("\t").head
+        val BlobName = File(path).relativize(File(sameFileInStage.split("\t").last)).toString
+
+        val BlobPath = path + / + ".sgit" + / + "objects"+ / + "Blobs"+ / + BlobHash
+        val oldContent= File(BlobPath).lines.toList
+
+        printDiff(BlobName,getDiff(oldContent,newContent))
+      })
     }
   }
-*/
+
+
+  def getDiff(oldFile: List[String], newFile: List[String]): List[String] = {
+    if (oldFile.isEmpty) newFile.map("+ " + _)
+    else {
+      if (newFile.isEmpty) oldFile.map("- " + _)
+      else
+        buildDiff(LCSMatrix(oldFile, newFile), oldFile, newFile)
+    }
+  }
+
+  def LCSMatrix(oldFile: List[String], newFile: List[String]): Array[Array[Int]] = {
+    val matrix = Array.ofDim[Int](newFile.length + 1, oldFile.length + 1)
+   @tailrec
+    def buildLCSMatrix(matrix: Array[Array[Int]], oldFile: List[String], newFile: List[String], i: Int, j: Int): Array[Array[Int]] = {
+      if (i > newFile.length || j > oldFile.length)
+        matrix
+        
+      else {
+        if (newFile(i - 1).equals(oldFile(j - 1)))
+          matrix(i)(j) = matrix(i - 1)(j - 1) + 1
+        else matrix(i)(j) = max(matrix(i)(j - 1), matrix(i - 1)(j))
+        if (j == oldFile.length)
+          buildLCSMatrix(matrix, oldFile, newFile, i + 1, 1)
+        else buildLCSMatrix(matrix, oldFile, newFile, i, j + 1)
+      }
+    }
+    buildLCSMatrix(matrix, oldFile, newFile, 1, 1)
+  }
+
+  def buildDiff(matrix: Array[Array[Int]], oldFile: List[String], newFile: List[String]): List[String] = {
+    @tailrec
+    def buildDiffRec(matrix: Array[Array[Int]], oldFile: List[String], newFile: List[String], i: Int, j: Int, result: List[String]): List[String] = {
+      if (i < 1 || j < 1)
+        result
+      else if (matrix(i)(j) == matrix(i)(j - 1))
+        buildDiffRec(matrix, oldFile, newFile, i, j - 1, ("-" +oldFile(j - 1)) +: result)
+      else if (matrix(i)(j) == matrix(i - 1)(j))
+        buildDiffRec(matrix, oldFile, newFile, i - 1, j, ("+" + newFile(i - 1)) +: result)
+      else
+        buildDiffRec(matrix, oldFile, newFile, i - 1, j - 1, oldFile(j - 1) +: result)
+    }
+    buildDiffRec(matrix, oldFile, newFile, newFile.length, oldFile.length, List[String]())
+  }
+
+
 }
 
 object Repository{
@@ -417,7 +535,7 @@ object Repository{
   def initRepository(path:String): String = {
     if (!isSgitRepository(true, path)) {
       createRepository()
-      "Initialised empty sGit repository in " + path
+      "Initialized empty sGit repository in "+ path + / +".sgit" + / +""
     }
     else "Unable to create a repository here: "+ path +", it's already a sgit repository"
   }
