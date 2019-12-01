@@ -43,7 +43,7 @@ These instructions will get you a copy of the project up and running on your loc
 Before starting to run the application, the following dependencies must be installed :
 
 
-sbt version 1.3.2            	  			scala version  2.12.6  
+sbt version 1.3.2            	  			scala version  2.13.1  
 
 
 ### Installing
